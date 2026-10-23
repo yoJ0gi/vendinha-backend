@@ -9,7 +9,6 @@ namespace Vendinha.Api.Models
         public string? Email { get; set; }
         public List<Divida> Dividas { get; set; } = new List<Divida>();
 
-        // propriedade apenas com get: a idade é calculada toda vez que é consultada
         public int Idade
         {
             get
@@ -21,7 +20,6 @@ namespace Vendinha.Api.Models
             }
         }
 
-        // soma apenas as dívidas que ainda não foram pagas
         public decimal TotalDividas
         {
             get { return Dividas.Where(d => !d.Paga).Sum(d => d.Valor); }
