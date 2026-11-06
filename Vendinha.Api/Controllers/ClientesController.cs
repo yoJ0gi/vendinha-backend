@@ -18,7 +18,46 @@ namespace Vendinha.Api.Controllers
             _context = context;
         }
 
-        // GET api/clientes/5
+        [HttpGet]
+        public IActionResult Listar(string? nome = null, int pagina = 1)
+        {
+            if (pagina < 1)
+                return BadRequest("A página deve ser maior ou igual a 1.");
+
+            const int tamanhoPagina = 10;
+
+            // Busca por nome (texto contido) e traz as dívidas junto. O ToList() executa a consulta no banco; o restante é feito em memória, pois TotalDividas é calculado no C# e não existe como coluna.
+            var consulta = _context.Clientes
+                .Include(c => c.Dividas)
+                .Where(c => nome == null || c.NomeCompleto.Contains(nome))
+                .ToList();
+
+            var itens = consulta
+                .OrderByDescending(c => c.TotalDividas) // quem mais deve primeiro
+                .ThenBy(c => c.NomeCompleto)            // desempate por nome
+                .Skip((pagina - 1) * tamanhoPagina)
+                .Take(tamanhoPagina)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.NomeCompleto,
+                    c.Cpf,
+                    c.Email,
+                    c.DataNascimento,
+                    c.Idade,
+                    c.TotalDividas
+                });
+
+            return Ok(new
+            {
+                pagina,
+                tamanhoPagina,
+                totalRegistros = consulta.Count,
+                totalPaginas = (int)Math.Ceiling(consulta.Count / (double)tamanhoPagina),
+                itens
+            });
+        }
+
         [HttpGet("{id}")]
         public IActionResult Buscar(int id)
         {
@@ -32,7 +71,6 @@ namespace Vendinha.Api.Controllers
             return Ok(cliente);
         }
 
-        // POST api/clientes
         [HttpPost]
         public IActionResult Criar(ClienteRequest request)
         {
@@ -59,7 +97,6 @@ namespace Vendinha.Api.Controllers
             return CreatedAtAction(nameof(Buscar), new { id = cliente.Id }, cliente);
         }
 
-        // PUT api/clientes/5
         [HttpPut("{id}")]
         public IActionResult Atualizar(int id, ClienteRequest request)
         {
@@ -87,7 +124,6 @@ namespace Vendinha.Api.Controllers
             return NoContent();
         }
 
-        // DELETE api/clientes/5?confirmar=true
         [HttpDelete("{id}")]
         public IActionResult Excluir(int id, bool confirmar = false)
         {
