@@ -1,0 +1,46 @@
+@host = http://localhost:5089
+
+### Cadastrar cliente
+POST {{host}}/api/clientes
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Ana Souza",
+  "cpf": "529.982.247-25",
+  "dataNascimento": "1998-01-05",
+  "email": "ana@email.com"
+}
+
+### Listar clientes (página 1, filtrando por nome)
+GET {{host}}/api/clientes?nome=ana&pagina=1
+
+### Buscar cliente
+GET {{host}}/api/clientes/1
+
+### Atualizar cliente
+PUT {{host}}/api/clientes/1
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Ana Souza Lima",
+  "cpf": "52998224725",
+  "dataNascimento": "1998-01-05"
+}
+
+### Cadastrar dívida
+POST {{host}}/api/clientes/1/dividas
+Content-Type: application/json
+
+{ "valor": 150.50 }
+
+### Listar dívidas do cliente
+GET {{host}}/api/clientes/1/dividas
+
+### Marcar dívida como paga
+PATCH {{host}}/api/clientes/1/dividas/1/pagar
+
+### Excluir cliente (pede confirmação se houver dívida em aberto)
+DELETE {{host}}/api/clientes/1
+
+### Excluir cliente confirmando
+DELETE {{host}}/api/clientes/1?confirmar=true
