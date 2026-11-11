@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "API + Desktop",
+    "Projects": [
+      {
+        "Path": "Vendinha.Api\\Vendinha.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Vendinha.Desktop\\Vendinha.Desktop.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
