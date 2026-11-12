@@ -1,3 +1,4 @@
+using System.Globalization;
 using Vendinha.Desktop.Models;
 using Vendinha.Desktop.Services;
 
@@ -23,19 +24,29 @@ namespace Vendinha.Desktop.Screens
                 lblTitulo.Text = "Editar cliente";
                 txtNome.Text = cliente.NomeCompleto;
                 mskCpf.Text = cliente.Cpf;
-                dtpNascimento.Value = cliente.DataNascimento;
+                mskNascimento.Text = cliente.DataNascimento.ToString("dd/MM/yyyy");
                 txtEmail.Text = cliente.Email;
             }
         }
 
         private async void btnSalvar_Click(object sender, EventArgs e)
         {
+            // A data é digitada (dd/mm/aaaa). TryParseExact devolve false se ela estiver
+            // vazia ou inválida, e a data convertida sai pelo parâmetro out (nascimento).
+            if (!DateTime.TryParseExact(mskNascimento.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var nascimento))
+            {
+                MessageBox.Show("Informe a data de nascimento no formato dd/mm/aaaa.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var dados = new Cliente
             {
                 Id = cliente == null ? 0 : cliente.Id,
                 NomeCompleto = txtNome.Text,
                 Cpf = mskCpf.Text,
-                DataNascimento = dtpNascimento.Value.Date,
+                DataNascimento = nascimento,
                 Email = txtEmail.Text
             };
 

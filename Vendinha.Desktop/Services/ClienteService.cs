@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Vendinha.Desktop.Models;
 
@@ -34,6 +35,20 @@ namespace Vendinha.Desktop.Services
         {
             var resposta = await http.PutAsJsonAsync($"api/clientes/{cliente.Id}", cliente);
             return await LerErro(resposta);
+        }
+
+        // DELETE api/clientes/{id}?confirmar=false
+        // Devolve null se o cliente foi excluído. Se ele tem dívida em aberto e não foi
+        // confirmado, a API responde 409 com a pergunta e a dívida, e devolvemos isso para a tela.
+        public async Task<ConfirmacaoExclusao?> Excluir(int id, bool confirmar = false)
+        {
+            var resposta = await http.DeleteAsync($"api/clientes/{id}?confirmar={confirmar.ToString().ToLower()}");
+
+            if (resposta.StatusCode == HttpStatusCode.Conflict)
+                return await resposta.Content.ReadFromJsonAsync<ConfirmacaoExclusao>();
+
+            resposta.EnsureSuccessStatusCode(); // outro erro (ex.: 404) vira exceção
+            return null;
         }
     }
 }

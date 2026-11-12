@@ -38,6 +38,7 @@ namespace Vendinha.Desktop.Screens
             lblPagina = new Label();
             btnProxima = new PrimaryButton();
             btnEditar = new PrimaryButton();
+            btnExcluir = new PrimaryButton();
             ((System.ComponentModel.ISupportInitialize)dgvClientes).BeginInit();
             SuspendLayout();
             // 
@@ -120,13 +121,24 @@ namespace Vendinha.Desktop.Screens
             // 
             // btnEditar
             // 
-            btnEditar.Location = new Point(730, 485);
+            btnEditar.Location = new Point(640, 485);
             btnEditar.Name = "btnEditar";
-            btnEditar.Size = new Size(140, 45);
+            btnEditar.Size = new Size(110, 45);
             btnEditar.TabIndex = 7;
             btnEditar.Text = "Editar";
             btnEditar.UseVisualStyleBackColor = false;
             btnEditar.Click += btnEditar_Click;
+            // 
+            // btnExcluir
+            // 
+            btnExcluir.BackColor = Color.FromArgb(200, 50, 50);
+            btnExcluir.Location = new Point(760, 485);
+            btnExcluir.Name = "btnExcluir";
+            btnExcluir.Size = new Size(110, 45);
+            btnExcluir.TabIndex = 8;
+            btnExcluir.Text = "Excluir";
+            btnExcluir.UseVisualStyleBackColor = false;
+            btnExcluir.Click += btnExcluir_Click;
             // 
             // ListarClientes
             // 
@@ -134,6 +146,7 @@ namespace Vendinha.Desktop.Screens
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlDarkDark;
             ClientSize = new Size(900, 560);
+            Controls.Add(btnExcluir);
             Controls.Add(btnEditar);
             Controls.Add(btnProxima);
             Controls.Add(lblPagina);
@@ -161,5 +174,6 @@ namespace Vendinha.Desktop.Screens
         private Label lblPagina;
         private PrimaryButton btnProxima;
         private PrimaryButton btnEditar;
+        private PrimaryButton btnExcluir;
     }
 }

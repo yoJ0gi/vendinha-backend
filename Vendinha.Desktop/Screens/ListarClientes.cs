@@ -41,6 +41,14 @@ namespace Vendinha.Desktop.Screens
             clientes = resultado.Itens;
             totalPaginas = Math.Max(resultado.TotalPaginas, 1);
 
+            // Se a página ficou vazia (ex.: excluiu o último cliente dela), volta para a última página
+            if (paginaAtual > totalPaginas)
+            {
+                paginaAtual = totalPaginas;
+                await CarregarClientes();
+                return;
+            }
+
             // Tipo anônimo (Aula 5): só as colunas que aparecem na tabela, já formatadas
             dgvClientes.DataSource = clientes
                 .Select(c => new
@@ -52,7 +60,7 @@ namespace Vendinha.Desktop.Screens
                     TotalDevido = c.TotalDividas.ToString("C")
                 })
                 .ToList();
-            dgvClientes.Columns["TotalDevido"].HeaderText = "Total devido";
+            dgvClientes.Columns[4].HeaderText = "Total devido"; // a 5ª coluna (começa em 0)
 
             lblPagina.Text = $"Página {paginaAtual} de {totalPaginas}";
             btnAnterior.Enabled = paginaAtual > 1;
@@ -93,6 +101,53 @@ namespace Vendinha.Desktop.Screens
             var tela = new CadastroCliente(clienteService, cliente);
             if (tela.ShowDialog() == DialogResult.OK)
                 await CarregarClientes(); // recarrega para mostrar os dados novos
+        }
+
+        private async void btnExcluir_Click(object sender, EventArgs e)
+        {
+            if (dgvClientes.CurrentRow == null)
+            {
+                MessageBox.Show("Selecione um cliente na lista.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var cliente = clientes[dgvClientes.CurrentRow.Index];
+
+            var resposta = MessageBox.Show($"Deseja excluir o cliente {cliente.NomeCompleto}?", "Excluir cliente",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (resposta != DialogResult.Yes)
+                return;
+
+            try
+            {
+                // 1ª tentativa sem confirmar: se o cliente tiver dívida em aberto, a API não exclui e pergunta
+                var confirmacao = await clienteService.Excluir(cliente.Id);
+
+                if (confirmacao != null)
+                {
+                    var divida = confirmacao.DividaEmAberto;
+                    var texto = confirmacao.Mensagem;
+                    if (divida != null)
+                        texto += $"\n\nValor: {divida.Valor:C}\nCriada em: {divida.DataCriacao:dd/MM/yyyy}";
+
+                    if (MessageBox.Show(texto, "Cliente com dívida em aberto",
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                        return;
+
+                    // O usuário confirmou: chama de novo, agora com confirmar = true
+                    await clienteService.Excluir(cliente.Id, confirmar: true);
+                }
+            }
+            catch (HttpRequestException)
+            {
+                MessageBox.Show("Não foi possível excluir o cliente. Confira se a Vendinha.Api está rodando.",
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            MessageBox.Show("Cliente excluído.", "Vendinha", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await CarregarClientes();
         }
     }
 }

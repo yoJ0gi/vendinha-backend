@@ -174,6 +174,10 @@ namespace Vendinha.Api.Controllers
             if (request.DataNascimento.Value.Date > DateTime.Today)
                 return "A data de nascimento não pode ser no futuro.";
 
+            // Limite para evitar datas digitadas erradas (ex.: 1900 no lugar de 2000)
+            if (request.DataNascimento.Value.Date < DateTime.Today.AddYears(-100))
+                return "A data de nascimento não pode ser de mais de 100 anos atrás.";
+
             if (!string.IsNullOrWhiteSpace(request.Email) && !EmailValido(request.Email))
                 return "E-mail em formato inválido.";
 

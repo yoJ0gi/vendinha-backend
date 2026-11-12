@@ -36,7 +36,7 @@ namespace Vendinha.Desktop.Screens
             lblCpf = new Label();
             mskCpf = new MaskedTextBox();
             lblNascimento = new Label();
-            dtpNascimento = new DateTimePicker();
+            mskNascimento = new MaskedTextBox();
             lblEmail = new Label();
             txtEmail = new TextBox();
             btnSalvar = new PrimaryButton();
@@ -105,14 +105,14 @@ namespace Vendinha.Desktop.Screens
             lblNascimento.TabIndex = 5;
             lblNascimento.Text = "Data de nascimento *";
             // 
-            // dtpNascimento
+            // mskNascimento
             // 
-            dtpNascimento.Font = new Font("Arial", 12F);
-            dtpNascimento.Format = DateTimePickerFormat.Short;
-            dtpNascimento.Location = new Point(250, 171);
-            dtpNascimento.Name = "dtpNascimento";
-            dtpNascimento.Size = new Size(210, 30);
-            dtpNascimento.TabIndex = 6;
+            mskNascimento.Font = new Font("Arial", 12F);
+            mskNascimento.Location = new Point(250, 171);
+            mskNascimento.Mask = "00/00/0000";
+            mskNascimento.Name = "mskNascimento";
+            mskNascimento.Size = new Size(210, 30);
+            mskNascimento.TabIndex = 6;
             // 
             // lblEmail
             // 
@@ -163,7 +163,7 @@ namespace Vendinha.Desktop.Screens
             Controls.Add(btnSalvar);
             Controls.Add(txtEmail);
             Controls.Add(lblEmail);
-            Controls.Add(dtpNascimento);
+            Controls.Add(mskNascimento);
             Controls.Add(lblNascimento);
             Controls.Add(mskCpf);
             Controls.Add(lblCpf);
@@ -187,7 +187,7 @@ namespace Vendinha.Desktop.Screens
         private Label lblCpf;
         private MaskedTextBox mskCpf;
         private Label lblNascimento;
-        private DateTimePicker dtpNascimento;
+        private MaskedTextBox mskNascimento;
         private Label lblEmail;
         private TextBox txtEmail;
         private PrimaryButton btnSalvar;
