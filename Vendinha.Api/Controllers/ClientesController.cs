@@ -26,10 +26,13 @@ namespace Vendinha.Api.Controllers
 
             const int tamanhoPagina = 10;
 
+            // Busca em minúsculas dos dois lados para não diferenciar maiúsculas ("maria" acha "Maria")
+            var busca = nome?.ToLower();
+
             // Busca por nome (texto contido) e traz as dívidas junto. O ToList() executa a consulta no banco; o restante é feito em memória, pois TotalDividas é calculado no C# e não existe como coluna.
             var consulta = _context.Clientes
                 .Include(c => c.Dividas)
-                .Where(c => nome == null || c.NomeCompleto.Contains(nome))
+                .Where(c => busca == null || c.NomeCompleto.ToLower().Contains(busca))
                 .ToList();
 
             var itens = consulta
