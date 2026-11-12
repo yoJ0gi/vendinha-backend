@@ -1,8 +1,13 @@
-# Vendinha Backend
+# Vendinha
 
-API em C# para informatizar o controle das contas "penduradas" dos clientes de uma vendinha. Permite cadastrar clientes, registrar dívidas e marcar pagamentos.
+Sistema em C# para informatizar o controle das contas com dívidas em aberto dos clientes de uma vendinha. Permite cadastrar clientes, registrar dívidas e marcar pagamentos.
 
-Trabalho da disciplina C# - Módulo I (Unimar).
+O repositório tem duas partes:
+
+- **Vendinha.Api**: a API (backend), que guarda os dados e aplica as regras.
+- **Vendinha.Desktop**: o aplicativo Windows Forms (frontend), que conversa com a API.
+
+Trabalho em dupla da disciplina C# - Módulo I (Unimar).
 
 ## Tecnologias
 
@@ -10,12 +15,16 @@ Trabalho da disciplina C# - Módulo I (Unimar).
 - Entity Framework Core 8
 - SQLite
 - Swagger para testar a API pelo navegador
+- Windows Forms (.NET 10) para o aplicativo desktop
 
 ## Pré-requisitos
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (confira com `dotnet --version`)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) para a API (confira com `dotnet --version`)
+- Para o aplicativo desktop: Windows, [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) e o Visual Studio com suporte a .NET 10 (o projeto `Vendinha.Desktop` usa `net10.0-windows` e não compila em Mac ou Linux)
 
 ## Como executar
+
+### 1. API
 
 Pelo terminal:
 
@@ -27,9 +36,25 @@ dotnet run
 
 Depois abra `http://localhost:5089/swagger` no navegador. Lá é possível testar todos os endpoints.
 
-Pelo Visual Studio: abra o arquivo `Vendinha.sln` e aperte F5.
-
 Para compilar sem executar: `dotnet build`.
+
+### 2. Aplicativo desktop
+
+A API precisa estar rodando antes, na porta 5089. O aplicativo usa o endereço fixo `http://localhost:5089/`, definido em `Vendinha.Desktop/Services/ApiService.cs`.
+
+No Visual Studio, abra o arquivo `Vendinha.sln` e inicie os dois projetos juntos: clique com o botão direito na solução, escolha "Configure Startup Projects", marque "Multiple startup projects" e coloque `Vendinha.Api` e `Vendinha.Desktop` como "Start". Depois aperte F5.
+
+Outra opção é deixar a API rodando no terminal (passo 1) e iniciar só o `Vendinha.Desktop` pelo Visual Studio.
+
+### Telas do aplicativo
+
+- **Tela inicial**: abre a listagem ou o cadastro de clientes.
+- **Listagem de clientes**: busca por nome, paginação de 10 em 10, ordenada de quem mais deve para quem menos deve, com idade e total devido. Daqui é possível editar, excluir e abrir as dívidas do cliente.
+- **Cadastro e edição de cliente**: nome, CPF, data de nascimento (`dd/mm/aaaa`) e e-mail.
+- **Exclusão**: se o cliente tem dívida em aberto, o aplicativo mostra o valor e a data da dívida e pergunta "Tem certeza?" antes de excluir.
+- **Dívidas do cliente**: lista as dívidas, mostra o total em aberto, lança uma nova dívida e marca como paga.
+
+Se a API não estiver rodando, as telas avisam com a mensagem "Confira se a Vendinha.Api está rodando".
 
 ## Banco de dados
 
@@ -43,7 +68,7 @@ O script SQL com a estrutura das tabelas está em [database/schema.sql](database
 
 - Nome completo, CPF e data de nascimento são obrigatórios.
 - O CPF precisa ser válido e não pode se repetir entre clientes. É guardado só com números.
-- A data de nascimento não pode estar no futuro.
+- A data de nascimento não pode estar no futuro nem ser de mais de 100 anos atrás.
 - O e-mail é opcional, mas se for informado precisa ter formato válido.
 - A idade é calculada a partir da data de nascimento e não é gravada no banco.
 - Um cliente só pode ter uma dívida em aberto por vez.
@@ -135,11 +160,24 @@ vendinha-backend/
 ├── README.md
 ├── database/
 │   └── schema.sql
-└── Vendinha.Api/
-    ├── Controllers/    endpoints (ClientesController, DividasController)
-    ├── Data/           VendinhaContext (acesso ao banco)
-    ├── Models/         Cliente, Divida e as classes de entrada (Request)
-    ├── Utils/          ValidadorCpf
-    ├── Program.cs      configuração da API
-    └── appsettings.json
+├── Vendinha.Api/
+│   ├── Controllers/    endpoints (ClientesController, DividasController)
+│   ├── Data/           VendinhaContext (acesso ao banco)
+│   ├── Models/         Cliente, Divida e as classes de entrada (Request)
+│   ├── Utils/          ValidadorCpf
+│   ├── Program.cs      configuração da API
+│   └── appsettings.json
+└── Vendinha.Desktop/
+    ├── Models/         Cliente, Divida e as classes que recebem as respostas da API
+    ├── Services/       ApiService (base), ClienteService e DividaService
+    ├── Screens/        telas: ListarClientes, CadastroCliente e DividasCliente
+    ├── Form1.cs        tela inicial
+    └── Program.cs      ponto de entrada do aplicativo
 ```
+
+## Autores
+
+Trabalho feito em dupla:
+
+- Lucas Jogi ([yoJ0gi](https://github.com/yoJ0gi))
+- Luccas Fiorin ([luccasfiorin](https://github.com/luccasfiorin))
