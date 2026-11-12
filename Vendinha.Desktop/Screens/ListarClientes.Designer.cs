@@ -39,6 +39,7 @@ namespace Vendinha.Desktop.Screens
             btnProxima = new PrimaryButton();
             btnEditar = new PrimaryButton();
             btnExcluir = new PrimaryButton();
+            btnDividas = new PrimaryButton();
             ((System.ComponentModel.ISupportInitialize)dgvClientes).BeginInit();
             SuspendLayout();
             // 
@@ -140,12 +141,23 @@ namespace Vendinha.Desktop.Screens
             btnExcluir.UseVisualStyleBackColor = false;
             btnExcluir.Click += btnExcluir_Click;
             // 
+            // btnDividas
+            // 
+            btnDividas.Location = new Point(520, 485);
+            btnDividas.Name = "btnDividas";
+            btnDividas.Size = new Size(110, 45);
+            btnDividas.TabIndex = 9;
+            btnDividas.Text = "Dívidas";
+            btnDividas.UseVisualStyleBackColor = false;
+            btnDividas.Click += btnDividas_Click;
+            // 
             // ListarClientes
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlDarkDark;
             ClientSize = new Size(900, 560);
+            Controls.Add(btnDividas);
             Controls.Add(btnExcluir);
             Controls.Add(btnEditar);
             Controls.Add(btnProxima);
@@ -175,5 +187,6 @@ namespace Vendinha.Desktop.Screens
         private PrimaryButton btnProxima;
         private PrimaryButton btnEditar;
         private PrimaryButton btnExcluir;
+        private PrimaryButton btnDividas;
     }
 }

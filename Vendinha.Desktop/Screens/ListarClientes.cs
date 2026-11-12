@@ -6,16 +6,18 @@ namespace Vendinha.Desktop.Screens
     public partial class ListarClientes : Form
     {
         private readonly ClienteService clienteService;
+        private readonly DividaService dividaService;
         private int paginaAtual = 1;
         private int totalPaginas = 1;
 
         // Clientes da página que está na tela (usado depois para Editar, Excluir e Dívidas)
         private List<Cliente> clientes = new List<Cliente>();
 
-        public ListarClientes(ClienteService clienteService)
+        public ListarClientes(ClienteService clienteService, DividaService dividaService)
         {
             InitializeComponent();
             this.clienteService = clienteService;
+            this.dividaService = dividaService;
         }
 
         private async void ListarClientes_Load(object sender, EventArgs e)
@@ -82,6 +84,23 @@ namespace Vendinha.Desktop.Screens
         private async void btnProxima_Click(object sender, EventArgs e)
         {
             paginaAtual++;
+            await CarregarClientes();
+        }
+
+        private async void btnDividas_Click(object sender, EventArgs e)
+        {
+            if (dgvClientes.CurrentRow == null)
+            {
+                MessageBox.Show("Selecione um cliente na lista.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var cliente = clientes[dgvClientes.CurrentRow.Index];
+            var tela = new DividasCliente(dividaService, cliente);
+            tela.ShowDialog();
+
+            // Ao voltar, recarrega: o total devido pode ter mudado
             await CarregarClientes();
         }
 

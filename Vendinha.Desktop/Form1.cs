@@ -7,6 +7,7 @@ namespace Vendinha.Desktop
     {
         // Um service só para o programa todo, passado para as telas que precisam dele
         private readonly ClienteService clienteService = new ClienteService();
+        private readonly DividaService dividaService = new DividaService();
 
         public Form1()
         {
@@ -15,7 +16,7 @@ namespace Vendinha.Desktop
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var tela = new ListarClientes(clienteService);
+            var tela = new ListarClientes(clienteService, dividaService);
             tela.ShowDialog();
         }
 
