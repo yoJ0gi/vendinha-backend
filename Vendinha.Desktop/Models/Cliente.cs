@@ -12,5 +12,16 @@ namespace Vendinha.Desktop.Models
         // Calculados pela API: aqui só são lidos
         public int Idade { get; set; }
         public decimal TotalDividas { get; set; }
+
+        // CPF com pontos e traço para mostrar na tela (a API guarda só os números)
+        public string CpfFormatado
+        {
+            get
+            {
+                if (Cpf.Length != 11)
+                    return Cpf;
+                return $"{Cpf.Substring(0, 3)}.{Cpf.Substring(3, 3)}.{Cpf.Substring(6, 3)}-{Cpf.Substring(9, 2)}";
+            }
+        }
     }
 }

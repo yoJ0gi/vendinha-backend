@@ -1,7 +1,13 @@
+using Vendinha.Desktop.Screens;
+using Vendinha.Desktop.Services;
+
 namespace Vendinha.Desktop
 {
     public partial class Form1 : Form
     {
+        // Um service só para o programa todo, passado para as telas que precisam dele
+        private readonly ClienteService clienteService = new ClienteService();
+
         public Form1()
         {
             InitializeComponent();
@@ -9,12 +15,14 @@ namespace Vendinha.Desktop
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // abre a tela de listagem de clientes (Parte 3)
+            var tela = new ListarClientes(clienteService);
+            tela.ShowDialog();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            // abre a tela de cadastro de cliente (Parte 4)
+            var tela = new CadastroCliente(clienteService);
+            tela.ShowDialog();
         }
     }
 }
