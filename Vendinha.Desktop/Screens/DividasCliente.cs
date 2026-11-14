@@ -53,6 +53,10 @@ namespace Vendinha.Desktop.Screens
             dgvDividas.Columns[2].HeaderText = "Criada em";
             dgvDividas.Columns[3].HeaderText = "Paga em";
 
+            // Valor em dinheiro alinhado à direita (célula e título da coluna)
+            dgvDividas.Columns[0].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvDividas.Columns[0].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+
             // LINQ (Aula 5): soma só as dívidas que ainda não foram pagas
             var totalEmAberto = dividas.Where(d => !d.Paga).Sum(d => d.Valor);
             lblTotal.Text = $"Total em aberto: {totalEmAberto:C}";

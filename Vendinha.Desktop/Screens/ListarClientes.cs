@@ -63,6 +63,13 @@ namespace Vendinha.Desktop.Screens
                 })
                 .ToList();
             dgvClientes.Columns[4].HeaderText = "Total devido"; // a 5ª coluna (começa em 0)
+            dgvClientes.Columns[3].HeaderText = "E-mail";
+
+            // Idade centralizada e valor em dinheiro alinhado à direita (célula e título da coluna)
+            dgvClientes.Columns[2].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvClientes.Columns[2].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvClientes.Columns[4].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            dgvClientes.Columns[4].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
 
             lblPagina.Text = $"Página {paginaAtual} de {totalPaginas}";
             btnAnterior.Enabled = paginaAtual > 1;

@@ -5,11 +5,14 @@ namespace Vendinha.Desktop.Componentes
     {
         public PrimaryButton()
         {
-            BackColor = Color.FromArgb(0, 120, 215);
+            BackColor = Color.FromArgb(37, 99, 235);
             ForeColor = Color.White;
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
-            Font = new Font("Arial", 12F);
+            // cores quando o mouse passa por cima e quando o botão é clicado
+            FlatAppearance.MouseOverBackColor = Color.FromArgb(29, 78, 216);
+            FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 64, 175);
+            Font = new Font("Segoe UI Semibold", 11F);
             Cursor = Cursors.Hand;
         }
     }

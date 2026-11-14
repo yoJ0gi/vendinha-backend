@@ -31,8 +31,7 @@ namespace Vendinha.Desktop.Screens
 
         private async void btnSalvar_Click(object sender, EventArgs e)
         {
-            // A data é digitada (dd/mm/aaaa). TryParseExact devolve false se ela estiver
-            // vazia ou inválida, e a data convertida sai pelo parâmetro out (nascimento).
+            // A data é digitada (dd/mm/aaaa). TryParseExact devolve false se ela estiver vazia ou inválida, e a data convertida sai pelo parâmetro out (nascimento).
             if (!DateTime.TryParseExact(mskNascimento.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out var nascimento))
             {
