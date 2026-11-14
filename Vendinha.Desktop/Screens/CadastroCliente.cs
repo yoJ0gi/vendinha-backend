@@ -49,8 +49,7 @@ namespace Vendinha.Desktop.Screens
                 Email = txtEmail.Text
             };
 
-            // As validações (CPF válido, CPF repetido, e-mail...) são feitas pela API.
-            // Se ela recusar, devolve a mensagem de erro e mostramos para o usuário.
+            // As validações (CPF, e-mail...) são feitas pela API; se ela recusar, mostramos a mensagem
             string? erro;
             try
             {

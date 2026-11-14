@@ -1,43 +1,32 @@
-using System.Net.Mail;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Vendinha.Api.Data;
 using Vendinha.Api.Models;
-using Vendinha.Api.Utils;
+using Vendinha.Api.Services;
 
 namespace Vendinha.Api.Controllers
 {
     [ApiController]
     [Route("api/clientes")]
-    public class ClientesController : ControllerBase
+    public class ClientesController : BaseController
     {
-        private readonly VendinhaContext _context;
+        private readonly ClienteService _service;
 
-        public ClientesController(VendinhaContext context)
+        public ClientesController(ClienteService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public IActionResult Listar(string? nome = null, int pagina = 1)
         {
             if (pagina < 1)
-                return BadRequest("A página deve ser maior ou igual a 1.");
+                return BadRequest(new { mensagem = "A página deve ser maior ou igual a 1." });
 
             const int tamanhoPagina = 10;
 
-            // Busca em minúsculas dos dois lados para não diferenciar maiúsculas ("maria" acha "Maria")
-            var busca = nome?.ToLower();
+            // O service já devolve filtrado e ordenado; aqui só separa a página
+            var clientes = _service.Listar(nome);
 
-            // Busca por nome (texto contido) e traz as dívidas junto. O ToList() executa a consulta no banco; o restante é feito em memória, pois TotalDividas é calculado no C# e não existe como coluna.
-            var consulta = _context.Clientes
-                .Include(c => c.Dividas)
-                .Where(c => busca == null || c.NomeCompleto.ToLower().Contains(busca))
-                .ToList();
-
-            var itens = consulta
-                .OrderByDescending(c => c.TotalDividas) // quem mais deve primeiro
-                .ThenBy(c => c.NomeCompleto)            // desempate por nome
+            var itens = clientes
                 .Skip((pagina - 1) * tamanhoPagina)
                 .Take(tamanhoPagina)
                 .Select(c => new
@@ -55,8 +44,8 @@ namespace Vendinha.Api.Controllers
             {
                 pagina,
                 tamanhoPagina,
-                totalRegistros = consulta.Count,
-                totalPaginas = (int)Math.Ceiling(consulta.Count / (double)tamanhoPagina),
+                totalRegistros = clientes.Count,
+                totalPaginas = (int)Math.Ceiling(clientes.Count / (double)tamanhoPagina),
                 itens
             });
         }
@@ -64,12 +53,10 @@ namespace Vendinha.Api.Controllers
         [HttpGet("{id}")]
         public IActionResult Buscar(int id)
         {
-            var cliente = _context.Clientes
-                .Include(c => c.Dividas)
-                .FirstOrDefault(c => c.Id == id);
+            var cliente = _service.Buscar(id);
 
             if (cliente == null)
-                return NotFound("Cliente não encontrado.");
+                return NotFound(new { mensagem = "Cliente não encontrado." });
 
             return Ok(cliente);
         }
@@ -77,52 +64,19 @@ namespace Vendinha.Api.Controllers
         [HttpPost]
         public IActionResult Criar(ClienteRequest request)
         {
-            var erro = Validar(request);
-            if (erro != null)
-                return BadRequest(erro);
+            var resultado = _service.Criar(request, out var cliente);
+            if (!resultado.DeuCerto)
+                return RespostaDeErro(resultado);
 
-            var cpf = ValidadorCpf.SomenteNumeros(request.Cpf!);
-
-            if (_context.Clientes.Any(c => c.Cpf == cpf))
-                return Conflict("Já existe um cliente cadastrado com este CPF.");
-
-            var cliente = new Cliente
-            {
-                NomeCompleto = request.NomeCompleto!.Trim(),
-                Cpf = cpf,
-                DataNascimento = request.DataNascimento!.Value,
-                Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim()
-            };
-
-            _context.Clientes.Add(cliente);
-            _context.SaveChanges();
-
-            return CreatedAtAction(nameof(Buscar), new { id = cliente.Id }, cliente);
+            return CreatedAtAction(nameof(Buscar), new { id = cliente!.Id }, cliente);
         }
 
         [HttpPut("{id}")]
         public IActionResult Atualizar(int id, ClienteRequest request)
         {
-            var cliente = _context.Clientes.FirstOrDefault(c => c.Id == id);
-            if (cliente == null)
-                return NotFound("Cliente não encontrado.");
-
-            var erro = Validar(request);
-            if (erro != null)
-                return BadRequest(erro);
-
-            var cpf = ValidadorCpf.SomenteNumeros(request.Cpf!);
-
-            // Ignora o próprio cliente na checagem de CPF duplicado
-            if (_context.Clientes.Any(c => c.Cpf == cpf && c.Id != id))
-                return Conflict("Já existe um cliente cadastrado com este CPF.");
-
-            cliente.NomeCompleto = request.NomeCompleto!.Trim();
-            cliente.Cpf = cpf;
-            cliente.DataNascimento = request.DataNascimento!.Value;
-            cliente.Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim();
-
-            _context.SaveChanges();
+            var resultado = _service.Atualizar(id, request);
+            if (!resultado.DeuCerto)
+                return RespostaDeErro(resultado);
 
             return NoContent();
         }
@@ -130,21 +84,14 @@ namespace Vendinha.Api.Controllers
         [HttpDelete("{id}")]
         public IActionResult Excluir(int id, bool confirmar = false)
         {
-            var cliente = _context.Clientes
-                .Include(c => c.Dividas)
-                .FirstOrDefault(c => c.Id == id);
+            var resultado = _service.Excluir(id, confirmar, out var dividaEmAberto);
 
-            if (cliente == null)
-                return NotFound("Cliente não encontrado.");
-
-            var dividaEmAberto = cliente.BuscarDividaEmAberto();
-
-            // Com dívida em aberto e sem confirmação, não exclui: pede confirmação
-            if (dividaEmAberto != null && !confirmar)
+            // Com dívida em aberto e sem confirmação: pergunta e mostra a dívida
+            if (resultado.Tipo == TipoResultado.Conflito && dividaEmAberto != null)
             {
                 return Conflict(new
                 {
-                    mensagem = "Tem certeza que deseja excluir o cliente, pois ele tem dívidas em aberto?",
+                    mensagem = resultado.Mensagem,
                     dividaEmAberto = new
                     {
                         dividaEmAberto.Valor,
@@ -153,48 +100,10 @@ namespace Vendinha.Api.Controllers
                 });
             }
 
-            _context.Clientes.Remove(cliente); // as dívidas saem junto (cascade)
-            _context.SaveChanges();
+            if (!resultado.DeuCerto)
+                return RespostaDeErro(resultado);
 
             return NoContent();
-        }
-
-        // Devolve a mensagem de erro, ou null se estiver tudo certo
-        private static string? Validar(ClienteRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.NomeCompleto))
-                return "O nome completo é obrigatório.";
-
-            if (string.IsNullOrWhiteSpace(request.Cpf) || !ValidadorCpf.EhValido(request.Cpf))
-                return "CPF inválido.";
-
-            if (request.DataNascimento == null)
-                return "A data de nascimento é obrigatória.";
-
-            if (request.DataNascimento.Value.Date > DateTime.Today)
-                return "A data de nascimento não pode ser no futuro.";
-
-            // Limite para evitar datas digitadas erradas (ex.: 1900 no lugar de 2000)
-            if (request.DataNascimento.Value.Date < DateTime.Today.AddYears(-100))
-                return "A data de nascimento não pode ser de mais de 100 anos atrás.";
-
-            if (!string.IsNullOrWhiteSpace(request.Email) && !EmailValido(request.Email))
-                return "E-mail em formato inválido.";
-
-            return null;
-        }
-
-        private static bool EmailValido(string email)
-        {
-            try
-            {
-                var endereco = new MailAddress(email.Trim());
-                return endereco.Address == email.Trim() && endereco.Host.Contains('.');
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
         }
     }
 }

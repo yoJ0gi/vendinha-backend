@@ -1,9 +1,8 @@
 namespace Vendinha.Desktop.Models
 {
-    // Resposta da API (409) quando o cliente a excluir tem dívida em aberto
-    public class ConfirmacaoExclusao
+    // Resposta 409 da exclusão: herda a Mensagem de RespostaErro e acrescenta a dívida em aberto
+    public class ConfirmacaoExclusao : RespostaErro
     {
-        public string Mensagem { get; set; } = string.Empty;
         public Divida? DividaEmAberto { get; set; }
     }
 }

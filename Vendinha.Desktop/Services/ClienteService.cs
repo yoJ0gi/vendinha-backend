@@ -37,9 +37,7 @@ namespace Vendinha.Desktop.Services
             return await LerErro(resposta);
         }
 
-        // DELETE api/clientes/{id}?confirmar=false
-        // Devolve null se o cliente foi excluído. Se ele tem dívida em aberto e não foi
-        // confirmado, a API responde 409 com a pergunta e a dívida, e devolvemos isso para a tela.
+        // DELETE api/clientes/{id}: devolve null se excluiu, ou a pergunta e a dívida (409) se precisar confirmar
         public async Task<ConfirmacaoExclusao?> Excluir(int id, bool confirmar = false)
         {
             var resposta = await http.DeleteAsync($"api/clientes/{id}?confirmar={confirmar.ToString().ToLower()}");

@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Vendinha.Api.Data;
+using Vendinha.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<VendinhaContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Vendinha")));
+
+// Services da camada de negócio, entregues aos controllers pelo construtor
+builder.Services.AddScoped<ClienteService>();
+builder.Services.AddScoped<DividaService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
