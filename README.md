@@ -21,6 +21,7 @@ Trabalho em dupla da disciplina C# - Módulo I (Unimar).
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) para a API (confira com `dotnet --version`)
 - Para o aplicativo desktop: Windows, [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) e o Visual Studio com suporte a .NET 10 (o projeto `Vendinha.Desktop` usa `net10.0-windows` e não compila em Mac ou Linux)
+- No Visual Studio, o componente **.NET 8.0 Runtime** precisa estar instalado (Visual Studio Installer → Modificar → Componentes individuais). Sem ele, o Visual Studio avisa que "o projeto está direcionando uma versão do .NET que não está instalada"
 
 ## Como executar
 
@@ -49,8 +50,8 @@ Outra opção é deixar a API rodando no terminal (passo 1) e iniciar só o `Ven
 ### Telas do aplicativo
 
 - **Tela inicial**: abre a listagem ou o cadastro de clientes.
-- **Listagem de clientes**: busca por nome, paginação de 10 em 10, ordenada de quem mais deve para quem menos deve, com idade e total devido. Daqui é possível editar, excluir e abrir as dívidas do cliente.
-- **Cadastro e edição de cliente**: nome, CPF, data de nascimento (`dd/mm/aaaa`) e e-mail.
+- **Listagem de clientes**: busca por nome (sem diferenciar maiúsculas e acentos: "álvaro" encontra "Álvaro"), paginação de 10 em 10, ordenada de quem mais deve para quem menos deve, com idade e total devido. Daqui é possível editar, excluir e abrir as dívidas do cliente. Enter no campo de busca faz a busca.
+- **Cadastro e edição de cliente**: nome, CPF, data de nascimento (`dd/mm/aaaa`) e e-mail. Enter salva e Esc cancela.
 - **Exclusão**: se o cliente tem dívida em aberto, o aplicativo mostra o valor e a data da dívida e pergunta "Tem certeza?" antes de excluir.
 - **Dívidas do cliente**: lista as dívidas, mostra o total em aberto, lança uma nova dívida e marca como paga.
 
@@ -152,6 +153,14 @@ Corpo do POST de dívida:
 | 404 | Cliente ou dívida não encontrados. |
 | 409 | CPF duplicado, segunda dívida em aberto, dívida já paga ou exclusão que pede confirmação. |
 
+Todas as respostas de erro (400, 404 e 409) vêm no mesmo formato:
+
+```json
+{ "mensagem": "CPF inválido." }
+```
+
+A exclusão que pede confirmação usa esse mesmo formato e acrescenta o campo `dividaEmAberto`.
+
 ## Estrutura de pastas
 
 ```
@@ -161,7 +170,8 @@ vendinha-backend/
 ├── database/
 │   └── schema.sql
 ├── Vendinha.Api/
-│   ├── Controllers/    endpoints (ClientesController, DividasController)
+│   ├── Controllers/    endpoints (BaseController, ClientesController, DividasController)
+│   ├── Services/       regras de negócio (ClienteService, DividaService, Resultado)
 │   ├── Data/           VendinhaContext (acesso ao banco)
 │   ├── Models/         Cliente, Divida e as classes de entrada (Request)
 │   ├── Utils/          ValidadorCpf
@@ -174,6 +184,14 @@ vendinha-backend/
     ├── Form1.cs        tela inicial
     └── Program.cs      ponto de entrada do aplicativo
 ```
+
+### Camadas da API
+
+A API segue a divisão em 3 camadas:
+
+- **Apresentação** (`Controllers/`): recebe as requisições HTTP, chama o service e devolve a resposta com o código certo (200, 400, 404, 409...).
+- **Negócio** (`Services/`): concentra as validações e as regras (CPF válido e único, uma dívida em aberto por cliente, confirmação na exclusão). Cada operação devolve um `Resultado`, que diz se deu certo ou qual foi o problema.
+- **Dados** (`Data/` e `Models/`): o `VendinhaContext` (Entity Framework) grava e lê o banco SQLite.
 
 ## Autores
 
